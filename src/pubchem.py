@@ -79,42 +79,32 @@ class PubChemBioAssayRecord(object):
         if not all_cids:
             return [(sid, None, None) for sid in sids]
         cid2smiles = self._get_smiles_from_cids(all_cids)
-        compounds = []
+        compounds = {}
         for sid in sids:
             if sid not in sid2cids:
-                compounds += [(sid, None, None)]
+                compounds[sid] = [None, None]
             else:
                 for cid in sid2cids[sid]:
                     found = False
                     if not found and cid in cid2smiles:
-                        compounds += [(sid, cid, cid2smiles[cid])]
+                        compounds[sid] = [cid, cid2smiles[cid]]
                         found = True
                 if not found:
-                    compounds += [(sid, None, None)]
+                    compounds[sid] = [None, None]
         return compounds
-
-    def _get_compounds_from_sids(self, sids):
-        compounds = {}
-        for subs in self._get_substances(sids):
-            compounds[subs[0]] = (subs[1], subs[2])
-        compounds = [compounds[sid] for sid in sids]
-        return compounds
-
-
+    
+    
     def _get_data_with_compounds(self, record):
-        sids = self._get_sids(record)
+        sids = self._get_sids(record) 
         compounds = self._get_substances(sids)
         data = self._get_data(record)
         for i in range(len(data)):
             sid = data[i]["sid"]
-            for c in compounds:
-                if c[0] == sid:
-                    cid = c[1]
-                    smiles = c[2]
-                    data[i]["cid"] = cid
-                    data[i]["smiles"] = smiles
+            data[i]["cid"] = compounds[sid][0]
+            data[i]["smiles"] = compounds[sid][1]
         return data
 
+        
     def get(self):
         result = {
             "assay_id": self._get_id(self.record),
