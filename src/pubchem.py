@@ -1,20 +1,17 @@
 import json
 import requests
+import os
 
 PUBCHEM_PREFIX = "PUBCHEM"
 
 
 class PubChemBioAssayRecord(object):
 
-    def __init__(self, assay_id=None, assay_json_file=None, batch_size=10000):
+    def __init__(self, assay_id, batch_size=10000):
         self.batch_size=batch_size
-        if assay_json_file is not None:
-            with open(assay_json_name, "r") as f:
-                self.record = json.load(f)
-        elif assay_id is not None:
-            self.url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/{}".format(assay_id)
-            r = requests.get("{0}/sids/json".format(self.url))
-            self.record = json.loads(r.text)
+        self.url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/{}".format(assay_id)
+        r = requests.get("{0}/sids/json".format(self.url))
+        self.record = json.loads(r.text)
 
     def _chunker(self, seq, size):
         return (seq[pos:pos + size] for pos in range(0, len(seq), size))
@@ -23,7 +20,9 @@ class PubChemBioAssayRecord(object):
         return record["InformationList"]["Information"][0]["AID"]
 
     def _get_sids(self, record):
-        return record["InformationList"]["Information"][0]["SID"]
+        sids = record["InformationList"]["Information"][0]["SID"]
+        sids.sort()
+        return sids
 
     def _get_description(self, record):
         req = requests.get("{}/description/json".format(self.url))
@@ -92,10 +91,10 @@ class PubChemBioAssayRecord(object):
                 if not found:
                     compounds[sid] = [None, None]
         return compounds
-    
-    
+
+
     def _get_data_with_compounds(self, record):
-        sids = self._get_sids(record) 
+        sids = self._get_sids(record)
         compounds = self._get_substances(sids)
         data = self._get_data(record)
         for i in range(len(data)):
@@ -104,7 +103,7 @@ class PubChemBioAssayRecord(object):
             data[i]["smiles"] = compounds[sid][1]
         return data
 
-        
+
     def get(self):
         result = {
             "assay_id": self._get_id(self.record),
@@ -114,3 +113,9 @@ class PubChemBioAssayRecord(object):
         return {"AssayId": "{0}{1}".format(PUBCHEM_PREFIX, result["assay_id"]),
                 "Description": result["description"],
                 "Data": result["data"]}
+
+    def save_json(self, path):
+        data = self.get()
+        assay_id = data["AssayId"]
+        with open(os.path.join(path, "{}.json".format(assay_id)), 'w') as outfile:
+            json.dump(data, outfile)
