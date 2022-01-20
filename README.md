@@ -29,7 +29,8 @@ c.save_json("./examples")
 
 #### Convert to csv
 Add the folder path where the .json files are stored, as well as the assay to convert. This code snippet saves two different files, a .csv with all results and the assay description (including detailed explanations on each results column) in .txt format. The save_df.py provides an example.
-Optionally, replace the function 'get_all_results' by 'get_outcome' to obtain a simplified version of the .csv results file containing solely the outcome of the bioassay.
+
+Optionally, replace the function `get_all_results` by `get_outcome` to obtain a simplified version of the .csv results file containing solely the outcome of the bioassay.
 ```
 from src.json2df import PubChemBioAssayJsonConverter
 c = PubChemBioAssayJsonConverter("./examples", "PUBCHEM400.json")
