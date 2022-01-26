@@ -1,5 +1,6 @@
 # bioassay-db
 This repository contains the scripts to download Bioassays from PubChem and convert the results to a readable .csv file.
+Check the associated [blogpost](https://medium.com/ersiliaio/downloading-pubchem-bioassays-made-easy-132ddd8e21c4) for more detailed explanations!
 
 ## Requirements
 ```
